@@ -1,0 +1,427 @@
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<script>
+function concreteStrength(e){
+	switch (parseFloat(e.target.value)){
+		case 15: //C15
+			fc = 7.2;
+			ft = 0.91;
+			break;
+		case 20: //C20
+			fc = 9.6;
+			ft = 1.1;
+			break;
+		case 25: //C25
+			fc = 11.9;
+			ft = 1.27;
+			break;
+		case 30: //C30
+			fc = 14.3;
+			ft = 1.43;
+			break;
+		case 35: //C35
+			fc = 16.7;
+			ft = 1.57;
+			break;
+		case 40: //C40
+			fc = 19.1;
+			ft = 1.71;
+			break;
+		case 45: //C45
+			fc = 21.1;
+			ft = 1.8;
+			break;
+		case 50: //C50
+			fc = 23.1;
+			ft = 1.89;
+			break;
+		case 55: //C55
+			fc = 25.3
+			ft = 1.96;
+			break;
+		case 60: //C60
+			fc = 27.5;
+			ft = 2.04;
+			break;
+		case 65: //C65
+			fc = 29.7;
+			ft = 2.09;
+			break;
+		case 70: //C70
+			fc = 31.8;
+			ft = 2.14;
+			break;
+		case 75: //C75
+			fc = 33.8;
+			ft = 2.18;
+			break;
+		case 80: //C80
+			fc = 35.9;
+			ft = 2.22;
+			break;
+	}
+	document.concrete001.concreteCompressiveStrength.value = fc;
+	document.concrete001.concreteTensileStrength.value = ft;
+}
+
+function concreteCover(e){
+	switch (e.target.value){
+		case "一类":
+			c1 = 15;
+			c2 = 20;
+			break;
+		case "二a":
+			c1 = 20;
+			c2 = 25;
+			break;
+		case "二b":
+			c1 = 25;
+			c2 = 35;
+			break;
+		case "三a":
+			c1 = 30;
+			c2 = 40;
+			break;
+		case "三b":
+			c1 = 40;
+			c2 = 50;
+			break;
+	}
+	
+	// <=C20
+	if(parseFloat(document.concrete001.concreteStrengthCategory.value) <= 20){
+		c1 = c1 + 5;
+		c2 = c2 + 5}
+		
+	if(document.concrete001.concreteGradeCategory.value =="梁" || document.concrete001.concreteGradeCategory.value =="柱"){
+		document.concrete001.concreteCoverThickness.value = c2}
+	else if (document.concrete001.concreteGradeCategory.value =="板" || document.concrete001.concreteGradeCategory.value =="墙"){
+		document.concrete001.concreteCoverThickness.value = c1}
+}
+
+function steelStrength(e){
+	switch (e.target.value){
+		case "HPB300":
+			fy = 270;
+			xib = 0.576;
+			break;
+		case "HRB335":
+			fy = 300;
+			xib = 0.55;
+			break;
+		case "HRB400":
+			fy = 360;
+			xib = 0.518;
+			break;
+		case "HRB500":
+			fy = 435;
+			xib = 0.482;
+			break;
+	}
+	document.concrete001.steelCompressiveStrength.value = fy;
+	
+	// <=C50
+	if(parseFloat(document.concrete001.concreteStrengthCategory.value) <= 50){
+		document.concrete001.boundaryRelativePressureHeight.value = xib;
+	}
+}
+
+function checkData(objArray){
+	var textnow;
+	var rst="true";
+	for(i=0;i<objArray.length;i++){
+	        textnow=eval(objArray[i])
+		if(textnow.value==""){
+			rst="false";
+			alert("请输入完整！");
+			textnow.focus()	;
+			textnow.select();
+			break;
+		}	
+	}
+	return rst
+}
+
+function isInteger(objArray){
+	var textnow;
+	var rst="true";
+	for(i=0;i<objArray.length;i++){
+	        textnow=eval(objArray[i]);
+		if(isNaN(textnow.value)){
+			rst="false";
+			alert("请输入数字！");
+			textnow.focus();
+			textnow.select();
+			break;
+		}	
+	}
+	return rst	
+}
+
+//计算最小配筋率
+function minSteelRatio(ft, fy){
+	return Math.max(0.002, 0.45 * ft / fy)
+}
+
+//计算函数，返回计算结果并显示在相应的结果项上。
+function calculator(){
+	//设定一个数组，把要检验的字段对应的输入框的字符串表示赋给数组
+	var objArray=new Array();
+	objArray[0]=document.concrete001.torque;
+	objArray[1]=document.concrete001.beamWidth;
+	objArray[2]=document.concrete001.beamHeight;
+	objArray[3]=document.concrete001.concreteCompressiveStrength;
+	objArray[4]=document.concrete001.concreteTensileStrength;
+	objArray[5]=document.concrete001.concreteCoverThickness;
+	objArray[6]=document.concrete001.steelCompressiveStrength;
+	objArray[7]=document.concrete001.boundaryRelativePressureHeight;
+	objArray[8]=document.concrete001.steelDiameter;
+	objArray[9]=document.concrete001.stirrupDiameter;
+	
+	//检验是否有空字符
+	rst = checkData(objArray)
+	if(rst == "false"){return;}
+	
+	//检验是否为数字
+	rst=isInteger(objArray);
+	if(rst=="false"){return;}		
+	
+	//从表单中取值
+	var torque = parseFloat(document.concrete001.torque.value);	//弯矩设计值M
+	var beamWidth = parseFloat(document.concrete001.beamWidth.value);	// 梁宽b
+	var beamHeight = parseFloat(document.concrete001.beamHeight.value);	// 梁高h
+	var concreteCompressiveStrength = parseFloat(document.concrete001.concreteCompressiveStrength.value);	// 混凝土轴心抗压强度设计值fc
+	var concreteTensileStrength = parseFloat(document.concrete001.concreteTensileStrength.value);	// 混凝土轴心抗拉强度设计值ft
+	var concreteCoverThickness = parseFloat(document.concrete001.concreteCoverThickness.value);		// 混凝土保护层厚度c
+	var steelCompressiveStrength = parseFloat(document.concrete001.steelCompressiveStrength.value);	// 钢筋抗拉强度设计值fy
+	var boundaryRelativePressureHeight = parseFloat(document.concrete001.boundaryRelativePressureHeight.value);	// 界限相对受压区高度ξb
+	var steelDiameter = parseFloat(document.concrete001.steelDiameter.value);	// 受拉钢筋直径d
+	var stirrupDiameter = parseFloat(document.concrete001.stirrupDiameter.value);	// 箍筋直径d1
+	
+	var concrete = parseFloat(document.concrete001.concreteStrengthCategory.value);
+	if( concrete <= 50){
+		var alpha1 = 1.0;
+	} else {
+		var alpha1 = 1.0 - ( concrete - 50 )/500;	// 0.99, 0.98, 0.97 ...
+	}
+	var effectiveHeight = beamHeight - ( concreteCoverThickness + 0.5 * steelDiameter + stirrupDiameter);	// 有效高度h0
+	var pressureHeight = Math.round(effectiveHeight - Math.sqrt(effectiveHeight**2 - 2 * torque * 10**6 / (alpha1 * concreteCompressiveStrength * beamWidth)));	// 等效受压区高度x
+	var crossSectionArea = Math.round(alpha1 * concreteCompressiveStrength * beamWidth * pressureHeight / steelCompressiveStrength);
+	//alert(crossSectionArea);
+	
+	document.concrete001.crossSectionArea.value = crossSectionArea;
+	
+	//是否少筋
+	var steelRatio = crossSectionArea / ( beamWidth * effectiveHeight);		//配筋率ρ
+	rst = minSteelRatio(concreteTensileStrength, steelCompressiveStrength);	//最小配筋率ρmin
+	if( steelRatio >= rst){
+		document.concrete001.lessSteel.value = '不少筋';
+	} else {
+		document.concrete001.lessSteel.value = '少筋';
+	}
+	
+	//是否超筋
+	var relativePressureHeight = pressureHeight / effectiveHeight;	//相对受压区高度ξ
+	if( relativePressureHeight <= boundaryRelativePressureHeight){
+		document.concrete001.overSteel.value = '不超筋';
+	} else {
+		document.concrete001.overSteel.value = '超筋';
+	}
+	if( steelRatio >= rst && relativePressureHeight <= boundaryRelativePressureHeight){
+		var steelNumber = Math.round(crossSectionArea / ( 3.14 * steelDiameter**2 / 4 ));
+		var area = Math.round(steelNumber * 3.14 * steelDiameter**2 / 4);
+		document.concrete001.steelSolution.value = steelNumber + 'B' + steelDiameter + '(Aₛ=' + area + 'mm²)';
+	} else {
+		document.concrete001.steelSolution.value = '须重新计算'
+	}
+	/*
+	//计算过程
+	var detail = '';
+	document.concrete001.calculatingDetail.value = detail;
+	*/
+}
+
+</script>
+
+<style type="text/css">
+td{ height:25px; padding-left:5px;}
+input {color:#000; }
+#readolny input{ background:#F7F7F7;border:1px solid #7F9DB9;height:16px;}
+    .style1
+    {
+        font-size: medium;
+    }
+</style>		
+</head>
+
+<body id="contractPage">
+<div id="container">
+    <div id="wrapper">
+		<div id="content">
+			<form name="concrete001" action="counter-aa">				
+			
+				<table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" >
+					<tr><td width="55%" valign="top">			
+			
+						<table  border="0"  cellpadding="1" cellspacing="1" width="100%" bgcolor="#CCCCCC">
+							<tr bgcolor="#B7B7B7"><td colspan="2" align="center"><strong>单筋矩形截面配筋计算</strong></td></tr>
+							<tr bgcolor="#F7F7F7"><td colspan="2" ><strong>基本信息</strong></td></tr>
+							<tr bgcolor="#FFFFFF"><td width="50%" align="right">钢筋砼构件类型：</td><td><select name="concreteGradeCategory" class="font12">
+								<option value=""></option>
+								<option value="梁" selected>梁</option>
+								<option value="板">板</option>
+								<option value="柱">柱</option>
+							  </select></td></tr>
+							<tr bgcolor="#FFFFFF"><td align="right">弯矩设计值(M)：</td><td><input name="torque" size="9" maxlength="16" class="ts_counter" type="text"> kN·m</td></tr>
+							<tr bgcolor="#FFFFFF"><td align="right">梁宽(b)：</td><td><input name="beamWidth" size="9" maxlength="16" class="ts_counter" type="text"> mm</td></tr>
+							<tr bgcolor="#FFFFFF"><td align="right">梁高(h)：</td><td><input name="beamHeight" size="9" maxlength="16" class="ts_counter" type="text"> mm</td></tr>
+							<tr bgcolor="#FFFFFF"><td width="50%" align="right">混凝土强度等级：</td><td><select name="concreteStrengthCategory" class="font12" onchange="javascript:concreteStrength(event)">
+								<option value=""></option>
+								<option value="15">C15</option>
+								<option value="20">C20</option>
+								<option value="25">C25</option>
+								<option value="30">C30</option>
+								<option value="35">C35</option>
+								<option value="40">C40</option>
+								<option value="45">C45</option>
+								<option value="50">C50</option>
+								<option value="55">C55</option>
+								<option value="60">C60</option>
+								<option value="65">C65</option>
+								<option value="70">C70</option>
+								<option value="75">C75</option>
+								<option value="80">C80</option>
+							  </select></td></tr>
+							<tr bgcolor="#FFFFFF"><td align="right">混凝土轴心抗压强度设计值(f<sub>c</sub>)：</td><td><input name="concreteCompressiveStrength" size="9" maxlength="16" class="ts_counter" type="text"> N/mm<sup>2</sup> <a href="/assets/pics/concreteStrength.png">查看规范</a></td></tr>
+							
+							<tr bgcolor="#FFFFFF"><td align="right">混凝土轴心抗拉强度设计值(f<sub>t</sub>)：</td><td><input name="concreteTensileStrength" size="9" maxlength="16" class="ts_counter" type="text"> N/mm<sup>2</sup> <a href="/assets/pics/concreteStrength.png">查看规范</a></td></tr>
+							
+							<tr bgcolor="#FFFFFF"><td width="50%" align="right">环境类别：</td><td><select name="environmentCategory" class="font12" onchange="javascript:concreteCover(event)">
+								<option value=""></option>
+								<option value="一类">一类</option>
+								<option value="二a">二a</option>
+								<option value="二b">二b</option>
+								<option value="三a">三a</option>
+								<option value="三b">三b</option>
+							  </select></td></tr>
+							  
+							<tr bgcolor="#FFFFFF"><td align="right">混凝土保护层厚度(c)：</td><td><input name="concreteCoverThickness" id="concreteCoverThickness" size="9" maxlength="16" class="ts_counter" type="text"> mm <a href="/assets/pics/concreteCover.png">查看规范</a></td></tr>
+							
+							<tr bgcolor="#FFFFFF"><td width="50%" align="right">钢筋牌号：</td><td><select name="steelGradeCategory" class="font12" onchange="javascript:steelStrength(event)">
+								<option value=""></option>
+								<option value="HPB300">HPB300</option>
+								<option value="HRB335">HRB335</option>
+								<option value="HRB400">HRB400</option>
+								<option value="HRB500">HRB500</option>
+							  </select></td></tr>
+							
+							<tr bgcolor="#FFFFFF"><td align="right">钢筋抗拉强度设计值(f<sub>y</sub>)：</td><td><input name="steelCompressiveStrength" size="9" maxlength="16" class="ts_counter" type="text"> N/mm<sup>2</sup> <a href="/assets/pics/steelStrength.png">查看规范</a></td></tr>
+							
+							<tr bgcolor="#FFFFFF"><td align="right">界限相对受压区高度(&xi;<sub>b</sub>)：</td><td><input name="boundaryRelativePressureHeight" size="9" maxlength="16" class="ts_counter" type="text"> <a href="/assets/pics/界限相对受压高度.png">查看参考值</a></td></tr>
+							
+							<tr bgcolor="#FFFFFF"><td width="50%" align="right">受拉钢筋直径(d)：</td><td><select name="steelDiameter" class="font12">
+								<option value=""></option>
+								<option value="6">6</option>
+								<option value="6.5">6.5</option>
+								<option value="8">8</option>
+								<option value="12">12</option>
+								<option value="14">14</option>
+								<option value="16">16</option>
+								<option value="18">18</option>
+								<option value="20">20</option>
+								<option value="22" selected>22</option>
+								<option value="25">25</option>
+								<option value="28">28</option>
+								<option value="32">32</option>
+								<option value="40">40</option>
+								<option value="50">50</option>
+							  </select> mm </td></tr>
+							
+							<tr bgcolor="#FFFFFF"><td width="50%" align="right">箍筋直径(d<sub>1</sub>)：</td><td><select name="stirrupDiameter" class="font12">
+								<option value=""></option>
+								<option value="6" selected>6</option>
+								<option value="6.5">6.5</option>
+								<option value="8">8</option>
+								<option value="12">12</option>
+							  </select> mm </td></tr>
+
+							<tr bgcolor="#FFFFFF"><td colspan="2" align="center">
+								<input  onclick="javascript:calculator()"; type="button" value="开始计算" name="button1" >
+							</td></tr> 			  
+						  
+						</table>
+					
+					</td></tr>
+					
+					<tr><td width="55%" valign="top">
+						<table  border="0"  cellpadding="1" cellspacing="1" width="100%" bgcolor="#CCCCCC" id="readolny">
+							<tr bgcolor="#F7F7F7"><td  colspan="2"><b>计算结果</b></td></tr>
+							<tr id="tr_debx" bgcolor="#FFFFFF">
+								<td align="center" height="28" width="50%"><div align="right">截面面积：</div></td>
+								<td width="50%"><input readonly="readonly" name="crossSectionArea" size="8" maxlength="16" class="ts_counter" type="text">	mm<sup>2</sup></td>
+							</tr>
+							<tr id="tr_debx" bgcolor="#FFFFFF">
+								<td align="center" height="28" width="50%"><div align="right">是否少筋：</div></td>
+								<td width="50%"><input readonly="readonly" name="lessSteel" size="8" maxlength="16" class="ts_counter" type="text"></td>
+							</tr>
+							<tr id="tr_debx" bgcolor="#FFFFFF">
+								<td align="center" height="28" width="50%"><div align="right">是否超筋：</div></td>
+								<td width="50%"><input readonly="readonly" name="overSteel" size="8" maxlength="16" class="ts_counter" type="text"></td>
+							</tr>
+							<tr id="tr_debx" bgcolor="#FFFFFF">
+								<td align="center" height="28" width="50%"><div align="right">配筋方案：</div></td>
+								<td width="50%"><input readonly="readonly" name="steelSolution" size="16" maxlength="32" class="ts_counter" type="text"></td>
+							</tr>
+						</table>
+			
+					</td></tr>
+					
+					<!-- 数学公式 -->
+					<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=AM_HTMLorMML-full"></script>
+					
+					<tr><td width="55%" valign="top">
+						<table  border="0"  cellpadding="1" cellspacing="1" width="100%" bgcolor="#CCCCCC" id="readolny">
+							<tr bgcolor="#F7F7F7"><td  colspan="2"><b>计算原理</b></td></tr>
+							<tr bgcolor="#FFFFFF">
+								<td align="center">
+									有效高度 `h_{0}= h-(c+0.5d+d_{1})`
+									<!--
+									=`
+									<input readonly="readonly" name="h" size="4" maxlength="16" class="ts_counter" type="text">
+									`-(`
+									<input readonly="readonly" name="c" size="4" maxlength="16" class="ts_counter" type="text">
+									`+0.5×`
+									<input readonly="readonly" name="d" size="4" maxlength="16" class="ts_counter" type="text">
+									`+`
+									<input readonly="readonly" name="d1" size="4" maxlength="16" class="ts_counter" type="text">
+									`)=`
+									<input readonly="readonly" name="h0" size="4" maxlength="16" class="ts_counter" type="text">
+									`mm`
+									-->
+									<br>
+									力矩平衡方程：`M\leq M_{u}=\alpha_{1}f_{c}b( h_{0}-\frac{x}{2})\Rightarrow`
+									等效受压区高度 `x=h_{0}-\sqrt{h_{0}^{2}-\frac{2M}{\alpha_{1}f_{c}b}}`
+									<br>
+									拉压平衡方程：`\alpha_{1}f_{c}bx=f_{y}A_{s}\Rightarrow`
+									受拉钢筋截面面积 `A_{s}=\frac{\alpha_{1}f_{c}bx}{f_{y}}`
+									<br>
+									相对受压区高度 `\xi=\frac{x}{h_{0}}`
+									<br>
+									配筋率 `\rho=\frac{A_{s}}{bh_{0}}`
+									<br>
+									不超筋条件：`\xi\leq \xi_{b}`
+									<br>
+									不少筋条件：`\rho\geq \rho_{min}=max(0.2%, 0.45\frac{f_{t}}{f_{y}})`
+								</td>
+							</tr>
+						</table>
+			
+					</td></tr>
+				</table>
+
+			</form>
+		</div>
+	</div>
+</div>
+</body>
+</html>
