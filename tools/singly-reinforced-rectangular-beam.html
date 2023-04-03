@@ -313,32 +313,47 @@ input {color:#000; }
 						<table  border="0"  cellpadding="1" cellspacing="1" width="100%" bgcolor="#CCCCCC">
 							<tr bgcolor="#B7B7B7"><td colspan="2" align="center"><strong>单筋矩形截面配筋计算</strong></td></tr>
 							<tr bgcolor="#F7F7F7"><td colspan="2" ><strong>基本信息</strong></td></tr>
-							<tr bgcolor="#FFFFFF"><td width="50%" align="right">钢筋砼构件类型：</td><td><select name="concreteGradeCategory" class="font12">
-								<option value=""></option>
-								<option value="梁" selected>梁</option>
-								<option value="板">板</option>
-								<option value="柱">柱</option>
-							  </select></td></tr>
-							<tr bgcolor="#FFFFFF"><td align="right">弯矩设计值(M)：</td><td><input name="torque" size="9" maxlength="16" class="ts_counter" type="text"> kN·m</td></tr>
-							<tr bgcolor="#FFFFFF"><td align="right">梁宽(b)：</td><td><input name="beamWidth" size="9" maxlength="16" class="ts_counter" type="text"> mm</td></tr>
-							<tr bgcolor="#FFFFFF"><td align="right">梁高(h)：</td><td><input name="beamHeight" size="9" maxlength="16" class="ts_counter" type="text"> mm</td></tr>
-							<tr bgcolor="#FFFFFF"><td width="50%" align="right">混凝土强度等级：</td><td><select name="concreteStrengthCategory" class="font12" onchange="javascript:concreteStrength(event)">
-								<option value=""></option>
-								<option value="15">C15</option>
-								<option value="20">C20</option>
-								<option value="25">C25</option>
-								<option value="30">C30</option>
-								<option value="35">C35</option>
-								<option value="40">C40</option>
-								<option value="45">C45</option>
-								<option value="50">C50</option>
-								<option value="55">C55</option>
-								<option value="60">C60</option>
-								<option value="65">C65</option>
-								<option value="70">C70</option>
-								<option value="75">C75</option>
-								<option value="80">C80</option>
-							  </select></td></tr>
+							<tr bgcolor="#FFFFFF">
+								<td width="50%" align="right">钢筋砼构件类型：</td>
+								<td><select name="concreteGradeCategory" class="font12">
+									<option value=""></option>
+									<option value="梁" selected>梁</option>
+									<option value="板">板</option>
+									<option value="柱">柱</option>
+								</select></td>
+							</tr>
+							<tr bgcolor="#FFFFFF">
+								<td align="right">弯矩设计值(M)：</td>
+								<td><input name="torque" size="9" maxlength="16" class="ts_counter" type="text"> kN·m</td>
+							</tr>
+							<tr bgcolor="#FFFFFF">
+								<td align="right">梁宽(b)：</td>
+								<td><input name="beamWidth" size="9" maxlength="16" class="ts_counter" type="text"> mm</td>
+							</tr>
+							<tr bgcolor="#FFFFFF">
+								<td align="right">梁高(h)：</td>
+								<td><input name="beamHeight" size="9" maxlength="16" class="ts_counter" type="text"> mm</td>
+							</tr>
+							<tr bgcolor="#FFFFFF">
+								<td width="50%" align="right">混凝土强度等级：</td>
+								<td><select name="concreteStrengthCategory" class="font12" onchange="javascript:concreteStrength(event)">
+									<option value=""></option>
+									<option value="15">C15</option>
+									<option value="20">C20</option>
+									<option value="25">C25</option>
+									<option value="30">C30</option>
+									<option value="35">C35</option>
+									<option value="40">C40</option>
+									<option value="45">C45</option>
+									<option value="50">C50</option>
+									<option value="55">C55</option>
+									<option value="60">C60</option>
+									<option value="65">C65</option>
+									<option value="70">C70</option>
+									<option value="75">C75</option>
+									<option value="80">C80</option>
+								</select></td>
+							</tr>
 							<tr bgcolor="#FFFFFF">
 								<td align="right">混凝土轴心抗压强度设计值(f<sub>c</sub>)：</td>
 								<td><input name="concreteCompressiveStrength" size="9" maxlength="16" class="ts_counter" type="text"> N/mm<sup>2</sup> <a href="#modal1">查看规范</a></td>
@@ -358,14 +373,17 @@ input {color:#000; }
 								</div>
 							</div>
 							
-							<tr bgcolor="#FFFFFF"><td width="50%" align="right">环境类别：</td><td><select name="environmentCategory" class="font12" onchange="javascript:concreteCover(event)">
-								<option value=""></option>
-								<option value="一类">一类</option>
-								<option value="二a">二a</option>
-								<option value="二b">二b</option>
-								<option value="三a">三a</option>
-								<option value="三b">三b</option>
-							  </select></td></tr>
+							<tr bgcolor="#FFFFFF">
+								<td width="50%" align="right">环境类别：</td>
+								<td><select name="environmentCategory" class="font12" onchange="javascript:concreteCover(event)">
+									<option value=""></option>
+									<option value="一类">一类</option>
+									<option value="二a">二a</option>
+									<option value="二b">二b</option>
+									<option value="三a">三a</option>
+									<option value="三b">三b</option>
+								</select></td>
+							</tr>
 							  
 							<tr bgcolor="#FFFFFF">
 								<td align="right">混凝土保护层厚度(c)：</td>
@@ -381,13 +399,16 @@ input {color:#000; }
 								</div>
 							</div>
 							
-							<tr bgcolor="#FFFFFF"><td width="50%" align="right">钢筋牌号：</td><td><select name="steelGradeCategory" class="font12" onchange="javascript:steelStrength(event)">
-								<option value=""></option>
-								<option value="HPB300">HPB300</option>
-								<option value="HRB335">HRB335</option>
-								<option value="HRB400">HRB400</option>
-								<option value="HRB500">HRB500</option>
-							  </select></td></tr>
+							<tr bgcolor="#FFFFFF">
+								<td width="50%" align="right">钢筋牌号：</td>
+								<td><select name="steelGradeCategory" class="font12" onchange="javascript:steelStrength(event)">
+									<option value=""></option>
+									<option value="HPB300">HPB300</option>
+									<option value="HRB335">HRB335</option>
+									<option value="HRB400">HRB400</option>
+									<option value="HRB500">HRB500</option>
+								</select></td>
+							</tr>
 							
 							<tr bgcolor="#FFFFFF">
 								<td align="right">钢筋抗拉强度设计值(f<sub>y</sub>)：</td>
@@ -417,35 +438,42 @@ input {color:#000; }
 								</div>
 							</div>
 							
-							<tr bgcolor="#FFFFFF"><td width="50%" align="right">受拉钢筋直径(d)：</td><td><select name="steelDiameter" class="font12">
-								<option value=""></option>
-								<option value="6">6</option>
-								<option value="6.5">6.5</option>
-								<option value="8">8</option>
-								<option value="12">12</option>
-								<option value="14">14</option>
-								<option value="16">16</option>
-								<option value="18">18</option>
-								<option value="20">20</option>
-								<option value="22" selected>22</option>
-								<option value="25">25</option>
-								<option value="28">28</option>
-								<option value="32">32</option>
-								<option value="40">40</option>
-								<option value="50">50</option>
-							  </select> mm </td></tr>
+							<tr bgcolor="#FFFFFF">
+								<td width="50%" align="right">受拉钢筋直径(d)：</td>
+								<td><select name="steelDiameter" class="font12">
+									<option value=""></option>
+									<option value="6">6</option>
+									<option value="6.5">6.5</option>
+									<option value="8">8</option>
+									<option value="12">12</option>
+									<option value="14">14</option>
+									<option value="16">16</option>
+									<option value="18">18</option>
+									<option value="20">20</option>
+									<option value="22" selected>22</option>
+									<option value="25">25</option>
+									<option value="28">28</option>
+									<option value="32">32</option>
+									<option value="40">40</option>
+									<option value="50">50</option>
+								</select> mm </td>
+							</tr>
 							
-							<tr bgcolor="#FFFFFF"><td width="50%" align="right">箍筋直径(d<sub>1</sub>)：</td><td><select name="stirrupDiameter" class="font12">
-								<option value=""></option>
-								<option value="6" selected>6</option>
-								<option value="6.5">6.5</option>
-								<option value="8">8</option>
-								<option value="12">12</option>
-							  </select> mm </td></tr>
+							<tr bgcolor="#FFFFFF">
+								<td width="50%" align="right">箍筋直径(d<sub>1</sub>)：</td>
+								<td><select name="stirrupDiameter" class="font12">
+									<option value=""></option>
+									<option value="6" selected>6</option>
+									<option value="6.5">6.5</option>
+									<option value="8">8</option>
+									<option value="12">12</option>
+								</select> mm </td>
+							</tr>
 
 							<tr bgcolor="#FFFFFF"><td colspan="2" align="center">
-								<input  onclick="javascript:calculator()"; type="button" value="开始计算" name="button1" >
-							</td></tr> 			  
+								<input onclick="javascript:calculator()" type="button" value="开始计算" name="button1" > 
+								<input onclick="javascript:document.concrete001.reset()" type="reset" value="清空所有" name="button2" >
+							</td></tr>	  
 						  
 						</table>
 					
