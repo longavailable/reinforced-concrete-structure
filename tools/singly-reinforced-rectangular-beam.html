@@ -163,6 +163,11 @@ function minSteelRatio(ft, fy){
 	return Math.max(0.002, 0.45 * ft / fy)
 }
 
+//计算梁下部纵向钢筋的水平最小配净距
+function minSpacing(steelDiameter){
+	return Math.max(25, steelDiameter)
+}
+
 //计算函数，返回计算结果并显示在相应的结果项上。
 function calculator(){
 	//设定一个数组，把要检验的字段对应的输入框的字符串表示赋给数组
@@ -227,8 +232,19 @@ function calculator(){
 	} else {
 		document.concrete001.overSteel.value = '超筋';
 	}
+	
+	// 简单的配筋方案
 	if( steelRatio >= rst && relativePressureHeight <= boundaryRelativePressureHeight){
-		var steelNumber = Math.round(crossSectionArea / ( 3.14 * steelDiameter**2 / 4 ));
+		minSpacing = minSpacing(steelDiameter);
+		var maxSteelNumber = Math.floor(( beamWidth - 2 * concreteCoverThickness - 2 * stirrupDiameter + minSpacing ) / ( steelDiameter + minSpacing ));
+		if (stirrupDiameter > 0){
+			var minSteelNumber = 2;
+		} else {
+			var minSteelNumber = 1;
+		}
+		var steelNumber = Math.ceil(crossSectionArea / ( 3.14 * steelDiameter**2 / 4 ));
+		if (steelNumber > maxSteelNumber){ steelNumber = maxSteelNumber; }
+		if (steelNumber < maxSteelNumber){ steelNumber = minSteelNumber; }
 		var area = Math.round(steelNumber * 3.14 * steelDiameter**2 / 4);
 		document.concrete001.steelSolution.value = steelNumber + 'B' + steelDiameter + '(Aₛ=' + area + 'mm²)';
 	} else {
@@ -467,6 +483,7 @@ input {color:#000; }
 									<option value="6.5">6.5</option>
 									<option value="8">8</option>
 									<option value="12">12</option>
+									<option value="0">不使用箍筋</option>
 								</select> mm </td>
 							</tr>
 
