@@ -170,6 +170,14 @@ function minSpacing(steelDiameter){
 
 //计算函数，返回计算结果并显示在相应的结果项上。
 function calculator(){
+	// 重置“计算结果”
+	/*
+	document.concrete001.crossSectionArea.value = '';
+	document.concrete001.lessSteel.value = '';
+	document.concrete001.overSteel.value = '';
+	document.concrete001.steelSolution.value = '';
+	*/
+	
 	//设定一个数组，把要检验的字段对应的输入框的字符串表示赋给数组
 	var objArray=new Array();
 	objArray[0]=document.concrete001.torque;
@@ -235,20 +243,20 @@ function calculator(){
 	
 	// 简单的配筋方案
 	if( steelRatio >= rst && relativePressureHeight <= boundaryRelativePressureHeight){
-		minSpacing = minSpacing(steelDiameter);
-		var maxSteelNumber = Math.floor(( beamWidth - 2 * concreteCoverThickness - 2 * stirrupDiameter + minSpacing ) / ( steelDiameter + minSpacing ));
-		if (stirrupDiameter > 0){
+		rstMinSpacing = minSpacing(steelDiameter);
+		var maxSteelNumber = Math.floor(( beamWidth - 2 * concreteCoverThickness - 2 * stirrupDiameter + rstMinSpacing ) / ( steelDiameter + rstMinSpacing ));
+		if ( stirrupDiameter > 0 ){
 			var minSteelNumber = 2;
 		} else {
 			var minSteelNumber = 1;
 		}
-		var steelNumber = Math.ceil(crossSectionArea / ( 3.14 * steelDiameter**2 / 4 ));
-		if (steelNumber > maxSteelNumber){ steelNumber = maxSteelNumber; }
-		if (steelNumber < maxSteelNumber){ steelNumber = minSteelNumber; }
-		var area = Math.round(steelNumber * 3.14 * steelDiameter**2 / 4);
+		var steelNumber = Math.ceil( crossSectionArea / ( 3.14 * steelDiameter**2 / 4 ));
+		if ( steelNumber > maxSteelNumber ){ steelNumber = maxSteelNumber; }
+		if ( steelNumber < maxSteelNumber ){ steelNumber = minSteelNumber; }
+		var area = Math.round( steelNumber * 3.14 * steelDiameter**2 / 4 );
 		document.concrete001.steelSolution.value = steelNumber + 'B' + steelDiameter + '(Aₛ=' + area + 'mm²)';
 	} else {
-		document.concrete001.steelSolution.value = '须重新计算'
+		document.concrete001.steelSolution.value = '须重新计算';
 	}
 	/*
 	//计算过程
