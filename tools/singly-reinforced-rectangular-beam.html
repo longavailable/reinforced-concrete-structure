@@ -219,15 +219,16 @@ function calculator(){
 	}
 	var effectiveHeight = beamHeight - ( concreteCoverThickness + 0.5 * steelDiameter + stirrupDiameter);	// 有效高度h0
 	var pressureHeight = Math.round(effectiveHeight - Math.sqrt(effectiveHeight**2 - 2 * torque * 10**6 / (alpha1 * concreteCompressiveStrength * beamWidth)));	// 等效受压区高度x
-	var crossSectionArea = Math.round(alpha1 * concreteCompressiveStrength * beamWidth * pressureHeight / steelCompressiveStrength);
+	var coef = steelCompressiveStrength / ( alpha1 * concreteCompressiveStrength ); //ξ=coef*ρ
+	var crossSectionArea = Math.round( beamWidth * pressureHeight / coef);
 	//alert(crossSectionArea);
 	
 	document.concrete001.crossSectionArea.value = crossSectionArea;
 	
 	//是否少筋
 	var steelRatio = crossSectionArea / ( beamWidth * effectiveHeight);		//配筋率ρ
-	rst = minSteelRatio(concreteTensileStrength, steelCompressiveStrength);	//最小配筋率ρmin
-	if( steelRatio >= rst){
+	rst_rho_min = minSteelRatio(concreteTensileStrength, steelCompressiveStrength);	//最小配筋率ρmin
+	if( steelRatio >= rst_rho_min){
 		document.concrete001.lessSteel.value = '不少筋';
 	} else {
 		document.concrete001.lessSteel.value = '少筋';
@@ -241,8 +242,8 @@ function calculator(){
 		document.concrete001.overSteel.value = '超筋';
 	}
 	
-	// 简单的配筋方案
-	if( steelRatio >= rst && relativePressureHeight <= boundaryRelativePressureHeight){
+	// 简单的配筋方案	
+	if( steelRatio >= rst_rho_min && relativePressureHeight <= boundaryRelativePressureHeight){
 		rstMinSpacing = minSpacing(steelDiameter);
 		var maxSteelNumber = Math.floor(( beamWidth - 2 * concreteCoverThickness - 2 * stirrupDiameter + rstMinSpacing ) / ( steelDiameter + rstMinSpacing ));
 		if ( stirrupDiameter > 0 ){
@@ -250,13 +251,40 @@ function calculator(){
 		} else {
 			var minSteelNumber = 1;
 		}
+		var steelSolutions = '';
+		for (n=minSteelNumber; n<=maxSteelNumber; n++){
+			var As_tmp = Math.round( n * 3.14 * steelDiameter**2 / 4 );
+			var x_tmp = Math.round( coef * As_tmp / beamWidth );
+			var Mu_tmp = Math.round( alpha1 * concreteCompressiveStrength * beamWidth * x_tmp * ( effectiveHeight - x_tmp / 2 ) * 10**-6);
+			if (Mu_tmp < torque){ continue; }
+			var rho_tmp = As_tmp / ( beamWidth * effectiveHeight);
+			if (rho_tmp < rst_rho_min){ continue; }
+			var xi_tmp = x_tmp / effectiveHeight;
+			if (xi_tmp > boundaryRelativePressureHeight){ continue; }
+			steelSolutions += n + 'B' + steelDiameter + '(Aₛ=' + As_tmp + 'mm²;不超筋;不少筋)\n';
+		}
+		/*
 		var steelNumber = Math.ceil( crossSectionArea / ( 3.14 * steelDiameter**2 / 4 ));
 		if ( steelNumber > maxSteelNumber ){ steelNumber = maxSteelNumber; }
 		if ( steelNumber < maxSteelNumber ){ steelNumber = minSteelNumber; }
 		var area = Math.round( steelNumber * 3.14 * steelDiameter**2 / 4 );
-		document.concrete001.steelSolution.value = steelNumber + 'B' + steelDiameter + '(Aₛ=' + area + 'mm²)';
+		var steelSolutions = steelNumber + 'B' + steelDiameter + '(Aₛ=' + area + 'mm²)';
+		*/
+		if (steelSolutions != ''){ 
+			document.getElementById('td_solution0').style.display='none';
+			document.getElementById('td_solution1').style.display='';
+			document.concrete001.steelSolution1.value = steelSolutions;
+			// 修改显示行数
+			document.concrete001.steelSolution1.rows = document.concrete001.steelSolution1.value.split('\n').length;
+		} else {
+			document.getElementById('td_solution0').style.display='';
+			document.getElementById('td_solution1').style.display='none';
+			document.concrete001.steelSolution0.value = '没有合适配筋方案';
+		}
 	} else {
-		document.concrete001.steelSolution.value = '须重新计算';
+		document.getElementById('td_solution0').style.display='';
+		document.getElementById('td_solution1').style.display='none';
+		document.concrete001.steelSolution0.value = '须重新计算';
 	}
 	/*
 	//计算过程
@@ -339,7 +367,7 @@ input {color:#000; }
 							<tr bgcolor="#F7F7F7"><td colspan="2" ><strong>基本信息</strong></td></tr>
 							<tr bgcolor="#FFFFFF">
 								<td width="50%" align="right">钢筋砼构件类型：</td>
-								<td><select name="concreteGradeCategory" class="font12">
+								<td><select name="concreteGradeCategory">
 									<option value=""></option>
 									<option value="梁" selected>梁</option>
 									<option value="板">板</option>
@@ -348,19 +376,19 @@ input {color:#000; }
 							</tr>
 							<tr bgcolor="#FFFFFF">
 								<td align="right">弯矩设计值(M)：</td>
-								<td><input name="torque" size="9" maxlength="16" class="ts_counter" type="text"> kN·m</td>
+								<td><input name="torque" size="9" maxlength="16" type="text"> kN·m</td>
 							</tr>
 							<tr bgcolor="#FFFFFF">
 								<td align="right">梁宽(b)：</td>
-								<td><input name="beamWidth" size="9" maxlength="16" class="ts_counter" type="text"> mm</td>
+								<td><input name="beamWidth" size="9" maxlength="16" type="text"> mm</td>
 							</tr>
 							<tr bgcolor="#FFFFFF">
 								<td align="right">梁高(h)：</td>
-								<td><input name="beamHeight" size="9" maxlength="16" class="ts_counter" type="text"> mm</td>
+								<td><input name="beamHeight" size="9" maxlength="16" type="text"> mm</td>
 							</tr>
 							<tr bgcolor="#FFFFFF">
 								<td width="50%" align="right">混凝土强度等级：</td>
-								<td><select name="concreteStrengthCategory" class="font12" onchange="javascript:concreteStrength(event)">
+								<td><select name="concreteStrengthCategory" onchange="javascript:concreteStrength(event)">
 									<option value=""></option>
 									<option value="15">C15</option>
 									<option value="20">C20</option>
@@ -380,12 +408,12 @@ input {color:#000; }
 							</tr>
 							<tr bgcolor="#FFFFFF">
 								<td align="right">混凝土轴心抗压强度设计值(f<sub>c</sub>)：</td>
-								<td><input name="concreteCompressiveStrength" size="9" maxlength="16" class="ts_counter" type="text"> N/mm<sup>2</sup> <a href="#modal1">查看规范</a></td>
+								<td><input name="concreteCompressiveStrength" size="9" maxlength="16" type="text"> N/mm<sup>2</sup> <a href="#modal1">查看规范</a></td>
 							</tr>
 							
 							<tr bgcolor="#FFFFFF">
 								<td align="right">混凝土轴心抗拉强度设计值(f<sub>t</sub>)：</td>
-								<td><input name="concreteTensileStrength" size="9" maxlength="16" class="ts_counter" type="text"> N/mm<sup>2</sup> <a href="#modal1">查看规范</a></td>
+								<td><input name="concreteTensileStrength" size="9" maxlength="16" type="text"> N/mm<sup>2</sup> <a href="#modal1">查看规范</a></td>
 							</tr>
 							
 							<!--modal1-->
@@ -399,7 +427,7 @@ input {color:#000; }
 							
 							<tr bgcolor="#FFFFFF">
 								<td width="50%" align="right">环境类别：</td>
-								<td><select name="environmentCategory" class="font12" onchange="javascript:concreteCover(event)">
+								<td><select name="environmentCategory" onchange="javascript:concreteCover(event)">
 									<option value=""></option>
 									<option value="一类">一类</option>
 									<option value="二a">二a</option>
@@ -411,7 +439,7 @@ input {color:#000; }
 							  
 							<tr bgcolor="#FFFFFF">
 								<td align="right">混凝土保护层厚度(c)：</td>
-								<td><input name="concreteCoverThickness" id="concreteCoverThickness" size="9" maxlength="16" class="ts_counter" type="text"> mm <a href="#modal2">查看规范</a></td>
+								<td><input name="concreteCoverThickness" id="concreteCoverThickness" size="9" maxlength="16" type="text"> mm <a href="#modal2">查看规范</a></td>
 							</tr>
 							
 							<!--modal2-->
@@ -425,7 +453,7 @@ input {color:#000; }
 							
 							<tr bgcolor="#FFFFFF">
 								<td width="50%" align="right">钢筋牌号：</td>
-								<td><select name="steelGradeCategory" class="font12" onchange="javascript:steelStrength(event)">
+								<td><select name="steelGradeCategory" onchange="javascript:steelStrength(event)">
 									<option value=""></option>
 									<option value="HPB300">HPB300</option>
 									<option value="HRB335">HRB335</option>
@@ -436,7 +464,7 @@ input {color:#000; }
 							
 							<tr bgcolor="#FFFFFF">
 								<td align="right">钢筋抗拉强度设计值(f<sub>y</sub>)：</td>
-								<td><input name="steelCompressiveStrength" size="9" maxlength="16" class="ts_counter" type="text"> N/mm<sup>2</sup> <a href="#modal3">查看规范</a></td>
+								<td><input name="steelCompressiveStrength" size="9" maxlength="16" type="text"> N/mm<sup>2</sup> <a href="#modal3">查看规范</a></td>
 							</tr>
 							
 							<!--modal3-->
@@ -450,7 +478,7 @@ input {color:#000; }
 							
 							<tr bgcolor="#FFFFFF">
 								<td align="right">界限相对受压区高度(&xi;<sub>b</sub>)：</td>
-								<td><input name="boundaryRelativePressureHeight" size="9" maxlength="16" class="ts_counter" type="text"> <a href="#modal4">查看参考值</a></td>
+								<td><input name="boundaryRelativePressureHeight" size="9" maxlength="16" type="text"> <a href="#modal4">查看参考值</a></td>
 							</tr>
 							
 							<!--modal4-->
@@ -464,7 +492,7 @@ input {color:#000; }
 							
 							<tr bgcolor="#FFFFFF">
 								<td width="50%" align="right">受拉钢筋直径(d)：</td>
-								<td><select name="steelDiameter" class="font12">
+								<td><select name="steelDiameter">
 									<option value=""></option>
 									<option value="6">6</option>
 									<option value="6.5">6.5</option>
@@ -485,7 +513,7 @@ input {color:#000; }
 							
 							<tr bgcolor="#FFFFFF">
 								<td width="50%" align="right">箍筋直径(d<sub>1</sub>)：</td>
-								<td><select name="stirrupDiameter" class="font12">
+								<td><select name="stirrupDiameter">
 									<option value=""></option>
 									<option value="6" selected>6</option>
 									<option value="6.5">6.5</option>
@@ -509,19 +537,20 @@ input {color:#000; }
 							<tr bgcolor="#F7F7F7"><td  colspan="2"><b>计算结果</b></td></tr>
 							<tr id="tr_debx" bgcolor="#FFFFFF">
 								<td align="center" height="28" width="50%"><div align="right">截面面积：</div></td>
-								<td width="50%"><input readonly="readonly" name="crossSectionArea" size="8" maxlength="16" class="ts_counter" type="text">	mm<sup>2</sup></td>
+								<td width="50%"><input readonly="readonly" name="crossSectionArea" size="9" maxlength="16" type="text">	mm<sup>2</sup></td>
 							</tr>
 							<tr id="tr_debx" bgcolor="#FFFFFF">
 								<td align="center" height="28" width="50%"><div align="right">是否少筋：</div></td>
-								<td width="50%"><input readonly="readonly" name="lessSteel" size="8" maxlength="16" class="ts_counter" type="text"></td>
+								<td width="50%"><input readonly="readonly" name="lessSteel" size="9" maxlength="16" type="text"></td>
 							</tr>
 							<tr id="tr_debx" bgcolor="#FFFFFF">
 								<td align="center" height="28" width="50%"><div align="right">是否超筋：</div></td>
-								<td width="50%"><input readonly="readonly" name="overSteel" size="8" maxlength="16" class="ts_counter" type="text"></td>
+								<td width="50%"><input readonly="readonly" name="overSteel" size="9" maxlength="16" type="text"></td>
 							</tr>
 							<tr id="tr_debx" bgcolor="#FFFFFF">
 								<td align="center" height="28" width="50%"><div align="right">配筋方案：</div></td>
-								<td width="50%"><input readonly="readonly" name="steelSolution" size="16" maxlength="32" class="ts_counter" type="text"></td>
+								<td id='td_solution0' width="50%"><input readonly="readonly" name="steelSolution0" size="9" maxlength="16" type="text"></td>
+								<td id='td_solution1' style="display:none" width="50%"><textarea readonly="readonly" name="steelSolution1" rows=2 cols=30 type="text"></textarea></td>
 							</tr>
 						</table>
 			
@@ -538,15 +567,15 @@ input {color:#000; }
 									有效高度 `h_{0}= h-(c+0.5d+d_{1})`
 									<!--
 									=`
-									<input readonly="readonly" name="h" size="4" maxlength="16" class="ts_counter" type="text">
+									<input readonly="readonly" name="h" size="4" maxlength="16" type="text">
 									`-(`
-									<input readonly="readonly" name="c" size="4" maxlength="16" class="ts_counter" type="text">
+									<input readonly="readonly" name="c" size="4" maxlength="16" type="text">
 									`+0.5×`
-									<input readonly="readonly" name="d" size="4" maxlength="16" class="ts_counter" type="text">
+									<input readonly="readonly" name="d" size="4" maxlength="16" type="text">
 									`+`
-									<input readonly="readonly" name="d1" size="4" maxlength="16" class="ts_counter" type="text">
+									<input readonly="readonly" name="d1" size="4" maxlength="16" type="text">
 									`)=`
-									<input readonly="readonly" name="h0" size="4" maxlength="16" class="ts_counter" type="text">
+									<input readonly="readonly" name="h0" size="4" maxlength="16" type="text">
 									`mm`
 									-->
 									<br>
