@@ -1,6 +1,11 @@
+<!DOCTYPE html>
+<html lang="zh">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>单筋矩形截面配筋计算</title>
 <script>
+
+// 计算混凝土强度
 function concreteStrength(e){
 	switch (parseFloat(e.target.value)){
 		case 15: //C15
@@ -64,6 +69,7 @@ function concreteStrength(e){
 	document.concrete001.concreteTensileStrength.value = ft;
 }
 
+// 计算混凝土保护层厚度
 function concreteCover(e){
 	switch (e.target.value){
 		case "一类":
@@ -99,6 +105,7 @@ function concreteCover(e){
 		document.concrete001.concreteCoverThickness.value = c1}
 }
 
+// 计算钢筋强度
 function steelStrength(e){
 	switch (e.target.value){
 		case "HPB300":
@@ -126,6 +133,7 @@ function steelStrength(e){
 	}
 }
 
+// 检查输入的完整性
 function checkData(objArray){
 	var textnow;
 	var rst="true";
@@ -142,6 +150,7 @@ function checkData(objArray){
 	return rst
 }
 
+// 判断是否是整型
 function isInteger(objArray){
 	var textnow;
 	var rst="true";
@@ -166,6 +175,73 @@ function minSteelRatio(ft, fy){
 //计算梁下部纵向钢筋的水平最小配净距
 function minSpacing(steelDiameter){
 	return Math.max(25, steelDiameter)
+}
+
+//切换<tag>的显示和隐藏
+function toggleDisplay(elem1, elem2) {
+	var el1 = document.getElementById(elem1);
+	var el2 = document.getElementById(elem2);
+	if(el1.style.display == 'none' || el1.style.display == '') {
+		el1.style.display = 'block';
+		el2.style.display = 'none';
+	} else {
+		el1.style.display = 'none';
+		el2.style.display = 'block';
+	}
+}
+
+//隐藏对象
+function hideElement(elemID) {
+    // 获取对象
+    var elem = document.getElementById(elemID);
+    // 设置对象行为不可见
+    elem.style.display = 'none';
+}
+
+//显示对象
+function showElement(elemID) {
+    // 获取对象
+    var elem = document.getElementById(elemID);
+    // 设置对象行为可见
+    elem.style.display = '';
+}
+
+// 设置打印预览弹窗打开时网页行为
+function handlePrintPreviewOpen() {
+	//alert("打印预览弹窗将打开");
+	hideElement('actionRow');	//隐藏命令行
+	//document.getElementById('actionRow').style.display = 'none';
+	showElement('breakLine');
+	showElement('copyright1');
+	hideElement('copyright0');
+}
+
+// 设置打印预览弹窗关闭时网页行为
+function handlePrintPreviewClose() {
+	//alert("打印预览弹窗已关闭");
+	showElement('actionRow');	//显示命令行
+	//document.getElementById('actionRow').style.display = '';
+	hideElement('breakLine');
+	hideElement('copyright1');
+	showElement('copyright0');
+}
+
+// 复制网页名称
+function duplicateTitle() {
+	document.getElementById("repeatTitle0").textContent = document.title;
+	document.getElementById("repeatTitle1").textContent = document.title;
+}
+
+// 获取当前日期
+function getCurrentDate() {
+    const dateContainer = document.getElementById("date-container");
+    const today = new Date();
+	const day = today.getDate().toString().padStart(2, "0"); 
+	const month = (today.getMonth() + 1).toString().padStart(2, "0"); 
+	const year = today.getFullYear();
+
+	const formattedDate = `${year}/${month}/${day}`;
+    dateContainer.innerHTML = formattedDate;
 }
 
 //计算函数，返回计算结果并显示在相应的结果项上。
@@ -271,26 +347,129 @@ function calculator(){
 		var steelSolutions = steelNumber + 'B' + steelDiameter + '(Aₛ=' + area + 'mm²)';
 		*/
 		if (steelSolutions != ''){ 
-			document.getElementById('td_solution0').style.display='none';
-			document.getElementById('td_solution1').style.display='';
+			// 更改配筋方案显示方式
+			//document.getElementById('td_solution0').style.display='none';
+			//document.getElementById('td_solution1').style.display='';
+			hideElement('td_solution0');
+			showElement('td_solution1');
 			document.concrete001.steelSolution1.value = steelSolutions;
 			// 修改显示行数
 			document.concrete001.steelSolution1.rows = document.concrete001.steelSolution1.value.split('\n').length;
+			// 更改配筋方案示意图显示方式
+			//document.getElementById('td_solution_svg0').style.display='none';
+			//document.getElementById('td_solution_svg1').style.display='';
+			hideElement('td_solution_svg0');
+			showElement('td_solution_svg1');
+			
+			// 混凝土块宽度，高度固定为150px
+			var beamWidthRelative = 150 * beamWidth / beamHeight;
+			document.getElementById('concreteRect').setAttribute('width', beamWidthRelative);
+			// 混凝土保护层厚度参数
+			var concreteCoverThicknessRelative = 150 * concreteCoverThickness / beamHeight;
+			document.getElementById('coverLine').setAttribute('y1', 150-concreteCoverThicknessRelative);
+			document.getElementById('coverLine').setAttribute('y2', 150-concreteCoverThicknessRelative);
+			document.getElementById('coverLine').setAttribute('x2', beamWidthRelative);
+			// 箍筋参数
+			var stirrupDiameterRelative = 150 * stirrupDiameter / beamHeight;
+			document.getElementById('stirupRect').setAttribute('height', stirrupDiameterRelative);
+			document.getElementById('stirupRect').setAttribute('y', 150-stirrupDiameterRelative-concreteCoverThicknessRelative);
+			document.getElementById('stirupRect').setAttribute('x', concreteCoverThicknessRelative);
+			document.getElementById('stirupRect').setAttribute('width', beamWidthRelative - 2 * concreteCoverThicknessRelative);
+			// 受拉钢筋1参数（左）
+			var steelRadiusRelative = 150 * steelDiameter / beamHeight / 2;
+			/*
+			document.getElementById('rebarCircle1').setAttribute('r', steelRadiusRelative);
+			document.getElementById('rebarCircle1').setAttribute('cx', concreteCoverThicknessRelative + steelRadiusRelative);
+			document.getElementById('rebarCircle1').setAttribute('cy', 150 - concreteCoverThicknessRelative - stirrupDiameterRelative - steelRadiusRelative);
+			// 受拉钢筋2参数（右）
+			document.getElementById('rebarCircle2').setAttribute('r', steelRadiusRelative);
+			document.getElementById('rebarCircle2').setAttribute('cx', beamWidthRelative - concreteCoverThicknessRelative - steelRadiusRelative);
+			document.getElementById('rebarCircle2').setAttribute('cy', 150 - concreteCoverThicknessRelative - stirrupDiameterRelative - steelRadiusRelative);
+			// 受拉钢筋3参数（中）
+			document.getElementById('rebarCircle3').setAttribute('r', steelRadiusRelative);
+			document.getElementById('rebarCircle3').setAttribute('cx', beamWidthRelative / 2);
+			document.getElementById('rebarCircle3').setAttribute('cy', 150 - concreteCoverThicknessRelative - stirrupDiameterRelative - steelRadiusRelative);
+			*/
+			// 清除现有配筋
+			var svg = document.getElementById('steelSolutionSvg');
+			var circles = svg.querySelectorAll('circle');
+			
+			for (var circle of circles) {
+			  svg.removeChild(circle);
+			}
+			// 识别最小配筋方案
+			var leastSteelSolution = parseInt(document.concrete001.steelSolution1.value.match(/\d+/)[0], 10);
+			//alert(leastSteelSolution);
+			// 受拉钢筋间距
+			deltaWidth = ( beamWidthRelative - 2 * concreteCoverThicknessRelative - 2 * steelRadiusRelative ) / (leastSteelSolution - 1);
+			for (var i = 0; i < leastSteelSolution; i++) {
+				// 创建一个新的circle元素
+				var newCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+
+				// 设置circle的属性
+				newCircle.setAttribute('cx', concreteCoverThicknessRelative + steelRadiusRelative + i * deltaWidth);
+				newCircle.setAttribute('cy', 150 - concreteCoverThicknessRelative - stirrupDiameterRelative - steelRadiusRelative);
+				newCircle.setAttribute('r', steelRadiusRelative);
+				newCircle.setAttribute('class', 'rebar-circle');
+
+				// 将新创建的circle元素添加到SVG中
+				svg.appendChild(newCircle);
+			}
+			// 修改文字标签及位置
+			document.getElementById('steelSolutionSvgText').setAttribute('x', beamWidthRelative / 2 - 16);
+			document.getElementById('steelSolutionSvgText').setAttribute('y', 150 - concreteCoverThicknessRelative - stirrupDiameterRelative - steelRadiusRelative * 2 - 4);
+			document.getElementById('steelSolutionSvgText').textContent = leastSteelSolution + 'B' + steelDiameter;
 		} else {
-			document.getElementById('td_solution0').style.display='';
-			document.getElementById('td_solution1').style.display='none';
+			// 重置计算结果-配筋方案
+			//document.getElementById('td_solution0').style.display='';
+			//document.getElementById('td_solution1').style.display='none';
+			showElement('td_solution0');
+			hideElement('td_solution1');
 			document.concrete001.steelSolution0.value = '没有合适配筋方案';
+			// 重置计算结果-配筋方案示意图
+			//toggleDisplay('td_solution_svg0','td_solution_svg1');
+			//document.concrete001.steelSolutionSvg1.value = '';
+			//document.getElementById('td_solution_svg0').style.display='';
+			//document.getElementById('td_solution_svg1').style.display='none';
+			showElement('td_solution_svg0');
+			hideElement('td_solution_svg1');
 		}
 	} else {
-		document.getElementById('td_solution0').style.display='';
-		document.getElementById('td_solution1').style.display='none';
+		// 重置计算结果-配筋方案
+		//document.getElementById('td_solution0').style.display='';
+		//document.getElementById('td_solution1').style.display='none';
+		showElement('td_solution0');
+		hideElement('td_solution1');
 		document.concrete001.steelSolution0.value = '须重新计算';
+		// 重置计算结果-配筋方案示意图
+		//toggleDisplay('td_solution_svg0','td_solution_svg1');
+		//document.concrete001.steelSolutionSvg1.value = '';
+		//document.getElementById('td_solution_svg0').style.display='';
+		//document.getElementById('td_solution_svg1').style.display='none';
+		showElement('td_solution_svg0');
+		hideElement('td_solution_svg1');
 	}
-	/*
-	//计算过程
-	var detail = '';
-	document.concrete001.calculatingDetail.value = detail;
-	*/
+}
+
+//清空所有
+function clearAll() {
+	// 清空所有input
+	document.concrete001.reset();
+	// 重置计算结果-配筋方案
+	//document.getElementById('td_solution0').style.display='';
+	//document.getElementById('td_solution1').style.display='none';
+	showElement('td_solution0');
+	hideElement('td_solution1');
+	// 重置计算结果-配筋方案示意图
+	//document.getElementById('td_solution_svg0').style.display='';
+	//document.getElementById('td_solution_svg1').style.display='none';
+	showElement('td_solution_svg0');
+	hideElement('td_solution_svg1');
+}
+
+// 调用浏览器打印预览
+function exportToPDF() {	
+	window.print();
 }
 
 </script>
@@ -350,20 +529,33 @@ input {color:#000; }
 	text-decoration: none;
 	transition: 0.3s;
 }
+.rebar-circle { fill: red; }
+.stirup-rect { fill: red; }
+.cover-line { stroke: black; stroke-width: 0.5; }
+.concrete-rect { fill: #f2f2f2; stroke: black; stroke-width: 1; }
+
+@media print {
+  /* CSS styles for the print preview dialog */
+  body {
+    font-size: 12pt;
+    margin: 20px;
+    padding: 10px;
+  }
+}
 </style>		
 </head>
 
-<body id="contractPage">
+<body id="contractPage" onbeforeprint="handlePrintPreviewOpen()" onafterprint="handlePrintPreviewClose()" onload="duplicateTitle(); getCurrentDate()">
 <div id="container">
     <div id="wrapper">
 		<div id="content">
-			<form name="concrete001" action="counter-aa">				
+			<form name="concrete001" action="counter-aa">
 			
 				<table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" >
 					<tr><td width="55%" valign="top">			
 			
 						<table  border="0"  cellpadding="1" cellspacing="1" width="100%" bgcolor="#CCCCCC">
-							<tr bgcolor="#B7B7B7"><td colspan="2" align="center"><strong>单筋矩形截面配筋计算</strong></td></tr>
+							<tr bgcolor="#B7B7B7"><td colspan="2" align="center"><strong id="repeatTitle0">单筋矩形截面配筋计算</strong></td></tr>
 							<tr bgcolor="#F7F7F7"><td colspan="2" ><strong>基本信息</strong></td></tr>
 							<tr bgcolor="#FFFFFF">
 								<td width="50%" align="right">钢筋砼构件类型：</td>
@@ -523,9 +715,10 @@ input {color:#000; }
 								</select> mm </td>
 							</tr>
 
-							<tr bgcolor="#FFFFFF"><td colspan="2" align="center">
+							<tr id="actionRow" bgcolor="#FFFFFF"><td colspan="3" align="center">
 								<input onclick="javascript:calculator()" type="button" value="开始计算" name="button1" > 
-								<input onclick="javascript:document.concrete001.reset()" type="reset" value="清空所有" name="button2" >
+								<input onclick="javascript:clearAll()" type="reset" value="清空所有" name="button2" >
+								<input onclick="javascript:exportToPDF()" type="button" value="打印/导出" name="button3" >
 							</td></tr>	  
 						  
 						</table>
@@ -551,6 +744,26 @@ input {color:#000; }
 								<td align="center" height="28" width="50%"><div align="right">配筋方案：</div></td>
 								<td id='td_solution0' width="50%"><input readonly="readonly" name="steelSolution0" size="9" maxlength="16" type="text"></td>
 								<td id='td_solution1' style="display:none" width="50%"><textarea readonly="readonly" name="steelSolution1" rows=2 cols=30 type="text"></textarea></td>
+							</tr>
+							<tr id="tr_debx" bgcolor="#FFFFFF">
+								<td align="center" width="50%"><div align="right">配筋方案示意图：</div></td>
+								<td id='td_solution_svg0' width="50%"><input readonly="readonly" name="steelSolutionSVG0" size="9" maxlength="16" type="text"></td>
+								<td id='td_solution_svg1' style="display:none" width="50%">
+									<svg id="steelSolutionSvg" width="152px" height="152px" viewBox="0 0 152 152" xmlns="http://www.w3.org/2000/svg">
+										<!-- 混凝土截面 -->
+										<rect id="concreteRect" x="0" y="0" width="30" height="150" class="concrete-rect"/>
+										<!-- 保护层厚度线 -->
+										<line id="coverLine" x1="0" y1="145" x2="30" y2="145" class="cover-line"/>
+										<!-- 箍筋 -->
+										<rect id="stirupRect" x="0" y="139" width="30" height="6" class="stirup-rect"/>
+										<!-- 钢筋用红色圆圈表示 -->
+										<!--
+										<circle id="rebarCircle1" cx="5" cy="128" r="5" class="rebar-circle"/>
+										<circle id="rebarCircle2" cx="15" cy="128" r="5" class="rebar-circle"/>
+										<circle id="rebarCircle3" cx="25" cy="128" r="5" class="rebar-circle"/>
+										<!-- 标注文字 -->
+										<text id="steelSolutionSvgText" x="10" y="100" font-family="Verdana" font-size="12">3B22</text>
+									</svg></td>
 							</tr>
 						</table>
 			
@@ -598,7 +811,13 @@ input {color:#000; }
 			
 					</td></tr>
 				</table>
-
+				<hr id='breakLine' style="display:none; border: 1px solid #000000;">
+				<p id="copyright0" style="text-align: right;">
+					<a href="https://longlovemyu.com/reinforced-concrete-structure/" target="_blank">南科Robin的工具箱</a>之<a id="repeatTitle1" href="">单筋矩形截面配筋计算</a>(<a id="repeatTitle1" href="https://storage.ccopyright.com.cn/scrr/soft/cert/2024/0809/2024R11L1492945/874321463990145024.pdf">软著登字第13562490号</a>) 联系人：<a href="mailto:liuxiaolong125@126.com">刘小龙</a>
+				</p>
+				<p id="copyright1" style="display:none; text-align: right;">
+					本报告由<a href="https://longlovemyu.com/reinforced-concrete-structure/" target="_blank">南科Robin的工具箱</a>提供，<span id="date-container"></span>。
+				</p>				
 			</form>
 		</div>
 	</div>
